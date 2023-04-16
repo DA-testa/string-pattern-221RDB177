@@ -1,32 +1,59 @@
 # python3
 
 def read_input():
-    # this function needs to aquire input both from keyboard and file
-    # as before, use capital i (input from keyboard) and capital f (input from file) to choose which input type will follow
+    # this function acquires input from both keyboard and file
+    # use capital i (input from keyboard) and capital f (input from file) to choose which input type will follow
     
-    
-    # after input type choice
-    # read two lines 
-    # first line is pattern 
-    # second line is text in which to look for pattern 
+    input_type = input().rstrip().lower()
+    if input_type == 'i':
+        # read input from keyboard
+        pattern = input().rstrip()
+        text = input().rstrip()
+    elif input_type == 'f':
+        # read input from file
+        filename = input().rstrip()
+        with open(filename, 'r') as f:
+            pattern = f.readline().rstrip()
+            text = f.readline().rstrip()
+    else:
+        raise ValueError("Invalid input type specified. Must be 'i' or 'f'.")
     
     # return both lines in one return
-    
-    # this is the sample return, notice the rstrip function
-    return (input().rstrip(), input().rstrip())
+    return pattern, text
 
 def print_occurrences(output):
-    # this function should control output, it doesn't need any return
+    # this function controls output, it doesn't need any return
     print(' '.join(map(str, output)))
 
 def get_occurrences(pattern, text):
-    # this function should find the occurances using Rabin Karp alghoritm 
-
-    # and return an iterable variable
-    return [0]
+    # this function finds the occurrences using Rabin-Karp algorithm
+    
+    # calculate the hash of the pattern
+    pattern_hash = sum(ord(pattern[i]) * pow(26, len(pattern)-i-1) for i in range(len(pattern)))
+    
+    # initialize variables
+    text_hash = 0
+    output = []
+    prime = 101
+    
+    # calculate the hash of the first substring of the text of the same length as the pattern
+    for i in range(len(pattern)):
+        text_hash += ord(text[i]) * pow(26, len(pattern)-i-1)
+    
+    # check if the hash of the first substring of text matches the hash of the pattern
+    if text_hash == pattern_hash and text[:len(pattern)] == pattern:
+        output.append(0)
+    
+    # calculate the hash of each subsequent substring of text and check if it matches the hash of the pattern
+    for i in range(1, len(text)-len(pattern)+1):
+        text_hash = (text_hash - ord(text[i-1]) * pow(26, len(pattern)-1)) * 26 + ord(text[i+len(pattern)-1])
+        if text_hash == pattern_hash and text[i:i+len(pattern)] == pattern:
+            output.append(i)
+    
+    # return the list of occurrences
+    return output
 
 
 # this part launches the functions
 if __name__ == '__main__':
     print_occurrences(get_occurrences(*read_input()))
-
