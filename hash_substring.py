@@ -1,32 +1,51 @@
-def read_input(): input_type = input() # Check for input type - "I" or "F"
+def read_input():
+    # This function acquires input both from keyboard and file
+    # As before, use capital 'I' (input from keyboard) and capital 'F' (input from file) to choose which input type will follow
+    input_type = input().strip()
+    if input_type == "I":
+        pattern = input().rstrip()
+        text = input().rstrip()
+    elif input_type == "F":
+        with open("tests/06", mode='r') as file:
+            pattern = file.readline().rstrip()
+            text = file.readline().rstrip()
 
-if "I" in input_type: # If input type is "I"
-    first_pattern = input().strip() # Input the first line which contains pattern
-    second_text = input().strip() # Input the second line which contains text
-    return (first_pattern, second_text) # Return both lines
+    # Read the two lines (pattern and text) after input type choice
+    # and return both lines in one return
+    return pattern, text
 
-if "F" in input_type: # If input type is "F"
-    with open("tests/06") as file: # Open the file "tests/06" and save as file
-        first_line = file.readline().strip()   # Read the first line which contains pattern
-        second_line = file.readline().strip()  # Read the second line which contains text
-    return (first_line, second_line) # Return both lines
-def print_occurrences(output): # This function controls the output, it doesn't need to return anything print(' '.join(map(str, output)))
+def print_occurrences(occurrences):
+    # Control the output and print the occurrences
+    print(' '.join(map(str, occurrences)))
 
-def get_occurrences(pattern, text): # This function finds the occurrences using Rabin-Karp algorithm p = len(pattern) t = len(text)
+def find_occurrences(pattern, text):
+    q = 256
+    b = 13
+    pattern_hash = 0
+    text_hash = 0
+    occurrences = []
+    
+    # Find the occurrences using the Rabin Karp algorithm
+    pattern_len = len(pattern)
+    text_len = len(text)
+    for i in range(pattern_len):
+        pattern_hash = (pattern_hash * q + ord(pattern[i])) % b
+        text_hash = (text_hash * q + ord(text[i])) % b
+        
+    for i in range(text_len - pattern_len + 1):
+        if pattern_hash == text_hash:
+            if pattern == text[i:i+pattern_len]:
+                occurrences.append(i)
+        if i < text_len - pattern_len:
+            text_hash = (q * (text_hash - ord(text[i]) * pow(q, pattern_len - 1, b)) + ord(text[i+pattern_len])) % b
+            if text_hash < 0:
+                text_hash += b
+    
+    # Return the occurrences as an iterable variable
+    return occurrences
 
-occurrences = []
-
-ph = hash(pattern) # Calculate the hash of the pattern
-th = hash(text[:p]) # Calculate the hash of the first substring of the text
-
-for i in range(t-p+1):
-    if ph == th and text[i:i+p] == pattern: # If the hashes match and the substring equals the pattern
-        occurrences.append(i) # Add the index of the substring to the list of occurrences
-
-    if i < t-p: # If there are more substrings to check
-        th = hash(text[i+1:i+p+1]) # Calculate the hash of the next substring
-
-# Return an iterable variable
-return occurrences
-
-if name == 'main': print_occurrences(get_occurrences(*read_input()))
+# Launch the functions
+if __name__ == '__main__':
+    text_pattern_occurrences = read_input()
+    occurrences = find_occurrences(*text_pattern_occurrences)
+    print_occurrences(occurrences)
